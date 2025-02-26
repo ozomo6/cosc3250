@@ -1,4 +1,4 @@
-../system/kill.o: ../system/kill.c ../include/xinu.h ../include/kernel.h \
+../main/xmain.o: ../main/xmain.c ../include/xinu.h ../include/kernel.h \
  ../include/stddef.h ../include/stdarg.h ../include/compiler.h \
  ../include/riscv.h ../include/ns16550.h ../include/version.h \
  ../include/ctype.h ../include/device.h ../include/memory.h \

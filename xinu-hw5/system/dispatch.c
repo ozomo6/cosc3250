@@ -1,4 +1,12 @@
 /**
+ * COSC 3250 - Project 5
+ ** This is our trap handler
+ *@author [Owen Mongoven and Miah Nelson]
+ *Instructor [Dr. Brylow]
+ *TA-BOT:MAILTO[owen.mongoven@marquette.edu miah.nelson@marquette.edu]
+ */
+
+/**
  * @file dispatch.c
  * @provides dispatch
  *
@@ -34,6 +42,32 @@ void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
 	*
 	* If the trap is not an environment call from U-Mode call xtrap
 	*/
+	
+	//check envi call from u-mode
+	
+	 //E_ENVCALL_FROM_UMODE = 8 -- cause -- staged in interrupt.S
+	 //see syscall_dispatch for load statement
+	if(cause == E_ENVCALL_FROM_UMODE){
+		swi_opcode = frame[CTX_A7];
+		frame[CTX_A0] = syscall_dispatch(swi_opcode, frame);
+		set_sepc((ulong)(program_counter + 4));
+	}
+
+
+
+	// in syscall.h -- a7 sys-disp
+	 
+	
+	//syscall_dispatch(CODE, frame);
+	
+	//return ___
+	//
+	
+	else{
+		xtrap(frame, cause, val, program_counter);
+	}
+
+
     }
 }
 
