@@ -38,7 +38,7 @@ pgtbl createFakeTable(void){
 	return root;
 }
 
-void printPageTable(pgtbl pagetable)
+void printPageTable(pgtbl pagetable, int lvl)
 {
 	/*
 	* TODO: Write a function that prints out the page table.
@@ -48,6 +48,35 @@ void printPageTable(pgtbl pagetable)
 	* table.  If it is a leaf, print the page table entry and the
 	* physical address is maps to. 
 	*/
+
+	//for loop for each possible entry in page table
+	int i;
+	for (i=0; i<512; i++){
+		ulong pte  = pagetable[i];
+		ulong physaddr = PTE2PA(pte);
+
+		int j;
+		for(j=0; j>lvl; j++){
+			kprintf("\t");
+		}
+
+		if(pte & PTE_V){
+			kprintf("Valid Bit: %d \r\n", (pte << 63) >>63); //proves valid PTE
+			kprintf("Entry: # %d\tPhysical Address: %d\tPTE: %d\r\n", i, physaddr, pte);
+
+			if ((pte & PTE_R) || (pte & PTE_W) || (pte & PTE_X)){
+				kprintf("leaf\r\n");
+
+			}
+			else{
+				printPageTable((pgtbl)physaddr, lvl-1);
+			}
+		}
+	//	else {
+	//		kprintf("no entry #%d \r\n", i);
+	//	}
+	}
+	kprintf("done\r\n");
 }
 
 /**
@@ -67,6 +96,7 @@ void testcases(void)
 		case '0':
 			// TODO: Write a testcase that creates a user process
 			// and prints out it's page table
+			printPageTable(createFakeTable(), 2);
 			break;
 		case '1':
 			// TODO: Write a testcase that demonstrates a user
