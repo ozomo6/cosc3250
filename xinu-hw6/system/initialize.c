@@ -52,7 +52,7 @@ void nulluser(void)
 
     xmain();
 
-    ready(create((void *)nullproc, INITSTK, "prnull", 0), RESCHED_NO);
+    ready(create((void *)nullproc, INITSTK, 1, "prnull", 0), RESCHED_NO);
     kill(0);
 }
 
@@ -122,6 +122,7 @@ static int sysinit(void)
     strncpy(ppcb->name, "main", 4);
     ppcb->stkbase       = (void *)&_end;
     ppcb->stklen = (ulong)memheap - (ulong)&_end;
+    ppcb->tickets = 1;
     currpid = NULLPROC;
 
     readylist = newqueue();

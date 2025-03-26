@@ -49,6 +49,16 @@ int test_usergetc(void) {
 
 	return 0;
 }
+int bigdog(void){
+	kprintf("Big dog is running... \n\r");
+	while(1);
+	return 0;
+}
+
+int littledog(void){
+	kprintf("Little dog got to run! \n\r");
+	return 0;
+}	
 
 int testmain(int argc, char **argv)
 {
@@ -122,7 +132,7 @@ void testcases(void)
     kprintf("1) Test user_getc syscall\r\n");
     kprintf("2) Test user_putc syscall\r\n");
     kprintf("3) Create three processes that test user_yield syscall\r\n");
-
+    kprintf("4) Create two processes to test preemption\r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -131,32 +141,36 @@ void testcases(void)
     switch (c)
     {
     case '0':
-        ready(create((void *)test_usernone, INITSTK, "test_usernone", 0),
-              RESCHED_YES);
+        ready(create((void *)test_usernone, INITSTK, 10, "test_usernone", 0),
+              RESCHED_NO);
 		break;
 
     case '1':
-        ready(create((void *)test_usergetc, INITSTK, "test_usergetc", 0),
+        ready(create((void *)test_usergetc, INITSTK, 10, "test_usergetc", 0),
               RESCHED_YES);
         break;
 
     case '2':
-        ready(create((void *)test_userputc, INITSTK, "test_userputc", 0),
+        ready(create((void *)test_userputc, INITSTK, 10, "test_userputc", 0),
               RESCHED_YES);
 		break;
 
     case '3':
         // Create three copies of a process, and let them play.
-        ready(create((void *)testmain, INITSTK, "MAIN1", 2, 0, NULL),
+        ready(create((void *)testmain, INITSTK, 1, "MAIN1", 2, 0, NULL),
               RESCHED_NO);
-        ready(create((void *)testmain, INITSTK, "MAIN2", 2, 0, NULL),
+        ready(create((void *)testmain, INITSTK, 5, "MAIN2", 2, 0, NULL),
               RESCHED_NO);
-        ready(create((void *)testmain, INITSTK, "MAIN3", 2, 0, NULL),
+        ready(create((void *)testmain, INITSTK, 20, "MAIN3", 2, 0, NULL),
               RESCHED_YES);
         while (numproc > 1)
             resched();
         break;
-
+    case '4':
+	// Test preemption:
+	ready(create((void *)bigdog, INITSTK, 1000, "Proc1", 0), RESCHED_NO);
+	ready(create((void *)littledog, INITSTK, 1, "Proc2", 0), RESCHED_YES);
+	break;
     default:
         break;
     }

@@ -54,6 +54,7 @@ typedef struct pentry
     int stklen;         /**< stack length                            */
     ulong ctx[CONTEXT]; /**< register context for non-running process*/
     char name[PNMLEN];  /**< process name                            */
+    uint tickets;       //new
 } pcb;
 
 /* process initialization constants */
@@ -61,6 +62,11 @@ typedef struct pentry
 #define INITRET  userret    /**< processes return address                */
 #define MINSTK   4096       /**< minimum process stack size              */
 #define NULLSTK  MINSTK     /**< null process stack size                 */
+#define PRIORITY_HIGH 100
+#define PRIORITY_MED 50
+#define PRIORITY_LOW 10
+
+
 
 extern struct pentry proctab[];
 extern int numproc;         /**< currently active processes              */
