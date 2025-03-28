@@ -146,7 +146,8 @@ ctxsw:
 	li t4, SSTATUS_S_MODE
 	csrc sstatus, t4
 	csrw sepc, t0
-
+	csrw satp, t2
+	sfence.vma zero, zero
 	sret
 switch:
 	ret

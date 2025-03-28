@@ -109,7 +109,7 @@ syscall resched(void)
 
 #include <xinu.h>
 
-extern void ctxsw(void *, void *);
+extern void ctxsw(void *, void *, ulong);
 /**
  * Reschedule processor to next ready process.
  * Upon entry, currpid gives current process id.  Proctab[currpid].pstate
@@ -169,7 +169,7 @@ syscall resched(void)
     preempt = QUANTUM;
 #endif
 
-    ctxsw(&oldproc->ctx, &newproc->ctx);
+    ctxsw(&oldproc->ctx, &newproc->ctx, MAKE_SATP(currpid, newproc->pagetable));
 
     /* The OLD process returns here when resumed. */
 

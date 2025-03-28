@@ -40,7 +40,7 @@ syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong na
 
     ssize = (ulong)((((ulong)(ssize + 3)) >> 2) << 2);
     /* round up to even boundary    */
-    saddr = (ulong *)getstk(ssize);     /* allocate new stack and pid   */
+    saddr = (ulong *)pgalloc();     /* allocate new stack and pid NEW  */
     pid = newpid();
     /* a little error checking      */
     if ((((ulong *)SYSERR) == saddr) || (SYSERR == pid))
@@ -63,8 +63,9 @@ syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong na
     ppcb->stkbase = saddr;
     ppcb->stklen = ssize;
     ppcb->tickets = priority;
+    ppcb->pagetable = vm_userinit(pid, saddr);
     strncpy(ppcb->name, name, PNMLEN - 1); //use pid? 
-
+    
 
     
     /* Initialize stack with accounting block. */

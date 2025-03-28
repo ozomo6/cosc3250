@@ -1,8 +1,17 @@
 /**
+ * COSC 3250 - Project 7
+ * Paging
+ * @author [Owen Mongoven & Miah Nelson]
+ * Instructor [Dr. Brylow]
+ * TA-BOT:MAILTO[owen.mongoven@marquette.edu miah.nelson@marquette.edu]
+ */
+
+
+/**
  * @file map.c
  * @provides mapPage, mapAddressRange
  *
- * Modified by:
+ * Modified by: Owen Mongoven & Miah Nelson
  *
  * TA-BOT:MAILTO
  */

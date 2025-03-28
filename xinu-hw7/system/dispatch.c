@@ -25,7 +25,7 @@
  * @param program_counter  The value of the sepc register 
  */
 
-void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
+void dispatch(ulong cause, ulong val, ulong *swaparea, ulong *program_counter) {
     ulong swi_opcode;
     
     if((long)cause > 0) {
@@ -48,8 +48,8 @@ void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
 	 //E_ENVCALL_FROM_UMODE = 8 -- cause -- staged in interrupt.S
 	 //see syscall_dispatch for load statement
 	if(cause == E_ENVCALL_FROM_UMODE){
-		swi_opcode = frame[CTX_A7];
-		frame[CTX_A0] = syscall_dispatch(swi_opcode, frame);
+		swi_opcode = swaparea[CTX_A7];
+		swaparea[CTX_A0] = syscall_dispatch(swi_opcode, swaparea);
 		set_sepc((ulong)(program_counter + 4));
 	}
 
@@ -64,7 +64,7 @@ void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
 	//
 	
 	else{
-		xtrap(frame, cause, val, program_counter);
+		xtrap(swaparea, cause, val, program_counter);
 	}
 	
     }
