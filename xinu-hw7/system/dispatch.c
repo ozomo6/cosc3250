@@ -25,8 +25,11 @@
  * @param program_counter  The value of the sepc register 
  */
 
-void dispatch(ulong cause, ulong val, ulong *swaparea, ulong *program_counter) {
+ulong dispatch(ulong cause, ulong val, ulong *swaparea, ulong *program_counter) {
+    
     ulong swi_opcode;
+    pcb *ppcb = &proctab[currpid];
+
     
     if((long)cause > 0) {
         cause = cause << 1;
@@ -48,20 +51,15 @@ void dispatch(ulong cause, ulong val, ulong *swaparea, ulong *program_counter) {
 	 //E_ENVCALL_FROM_UMODE = 8 -- cause -- staged in interrupt.S
 	 //see syscall_dispatch for load statement
 	if(cause == E_ENVCALL_FROM_UMODE){
-		swi_opcode = swaparea[CTX_A7];
-		swaparea[CTX_A0] = syscall_dispatch(swi_opcode, swaparea);
+		swi_opcode = ppcb->swaparea[CTX_A7];
+		int temp;
+		   temp	= syscall_dispatch(swi_opcode, (ulong*)&(ppcb->swaparea[CTX_A0]));
+		
+		//TODO: recalculate PCB refrences?
+		ppcb = &proctab[currpid];
+		ppcb->swaparea[CTX_A0] = temp;
 		set_sepc((ulong)(program_counter + 4));
 	}
-
-
-
-	// in syscall.h -- a7 sys-disp
-	 
-	
-	//syscall_dispatch(CODE, frame);
-	
-	//return ___
-	//
 	
 	else{
 		xtrap(swaparea, cause, val, program_counter);
@@ -93,6 +91,7 @@ void dispatch(ulong cause, ulong val, ulong *swaparea, ulong *program_counter) {
         }
     }
 }
+ return MAKE_SATP(currpid, ppcb->pagetable);
 }
 
 

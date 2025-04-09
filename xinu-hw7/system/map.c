@@ -44,7 +44,6 @@ syscall mapAddressRange(pgtbl pagetable, ulong vaddr, ulong paddr,
     {
         return SYSERR;
     }
-
     // Round the length, vaddr and paddr to the nearest page size
     length = roundpage(length);
     vaddr = (ulong)truncpage(vaddr);
@@ -90,6 +89,31 @@ syscall mapPage(pgtbl pagetable, ulong vaddr, ulong paddr, int attr)
     * Once you've traversed all three levels, set the attributes (attr) for
     * the leaf page (don't forget to set the valid bit!)
     */
+	ulong VPN2 = PX(2, vaddr);
+        ulong VPN1 = PX(1, vaddr);
+        ulong VPN0 = PX(0, vaddr);
+	
+	ulong *level0 = NULL;
+	ulong *level1 = NULL;
+
+        //if pte is not valid: create new page
+        if(!(pagetable[VPN2] & PTE_V)){
+                pagetable[VPN2] = PA2PTE(pgalloc()) | PTE_V;
+	}
+
+	level1 = (ulong *)PTE2PA(pagetable[VPN2]);
+	if (!(level1[VPN1] & PTE_V)) {
+		level1[VPN1] = PA2PTE(pgalloc()) | PTE_V;
+	}
+
+	level0 = (ulong *)PTE2PA(level1[VPN1]);
+	if(!(level0[VPN0] & PTE_V)) {
+			level0[VPN0] = PA2PTE(paddr) | attr | PTE_V;
+		}
+	
+	//flush 
+	sfence_vma();
+
 
     //  DEBUGGING LINE:
     //  kprintf("mapPage(pt:0x%X, v:0x%X, p:0x%0X, a:0x%03X)\r\n",

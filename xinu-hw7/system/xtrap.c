@@ -30,6 +30,12 @@ char *trap_names[] = {
 void xtrap(ulong *frame, ulong cause, ulong address, ulong *pc)
 {
     /* If not an interrupt or syscall, fall through to generic exception handler */
+    
+    if (address == 0){
+            kprintf("NULL POINTER EXCEPTION");
+    }
+    else{
+	
     kprintf("\r\n\r\nXINU Exception [%s]\r\n", trap_names[cause]);
     kprintf("Faulting code: 0x%016lX\r\n", pc);
 
@@ -61,6 +67,7 @@ void xtrap(ulong *frame, ulong cause, ulong address, ulong *pc)
     kprintf("[0x%016lX]  ra:0x%016lX   sp:0x%016lX   gp:0x%016lX   tp:0x%016lX\r\n",
             frame + CTX_RA,
             frame[CTX_RA], frame[CTX_SP], frame[CTX_GP], frame[CTX_GP]);
+    }
     while (1)
         ;                       /* forever */
 }

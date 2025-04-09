@@ -16,7 +16,7 @@
 
 static pid_typ newpid(void);
 void userret(void);
-void *getstk(ulong);
+//void *getstk(ulong);
 
 /**
  * Create a new process to start running a function.
@@ -26,7 +26,7 @@ void *getstk(ulong);
  * @param nargs    number of arguments that follow
  * @return the new process id
  */
-syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong nargs, ...)
+syscall create(void *funcaddr, ulong ssize, uint priority, char *name, ulong nargs, ...)
 {
     ulong *saddr;               /* stack address                */
     ulong pid;                  /* stores new process id        */
@@ -40,15 +40,16 @@ syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong na
 
     ssize = (ulong)((((ulong)(ssize + 3)) >> 2) << 2);
     /* round up to even boundary    */
-    saddr = (ulong *)pgalloc();     /* allocate new stack and pid NEW  */
     pid = newpid();
+    saddr = (ulong *)pgalloc();     /* allocate new stack and pid NEW  */
+
     /* a little error checking      */
     if ((((ulong *)SYSERR) == saddr) || (SYSERR == pid))
     {
         return SYSERR;
     }
 
-    numproc++;
+   
     ppcb = &proctab[pid];
 	
     // TODO: Setup PCB entry for new process.
@@ -61,12 +62,13 @@ syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong na
      
     ppcb->state = PRSUSP;
     ppcb->stkbase = saddr;
+    kprintf("saddr: %x\r\n", saddr);
     ppcb->stklen = ssize;
     ppcb->tickets = priority;
     ppcb->pagetable = vm_userinit(pid, saddr);
-    strncpy(ppcb->name, name, PNMLEN - 1); //use pid? 
+    strncpy(ppcb->name, name, PNMLEN); //use pid? 
     
-
+    ulong *temp = saddr;
     
     /* Initialize stack with accounting block. */
     *saddr = STACKMAGIC;
@@ -100,11 +102,21 @@ syscall create(void *funcaddr, ulong ssize, uint priority,  char *name, ulong na
    
     va_end(ap);
 
-    //Set addresses to registers
-
-    ppcb->ctx[CTX_SP] = (ulong)saddr;
+    //Set addresses to registers0
+  	ulong *test = 0x0;
+    kprintf("PROCSTACKVADDR: %x\r\n", PROCSTACKVADDR);
+    kprintf("new saddr: %x\r\n", saddr);
+    kprintf("stkbase: %x\r\n", ppcb->stkbase);
+    kprintf("virtual stkbase; %x\r\n", PROCSTACKVADDR);
+   // ppcb->ctx[CTX_SP] = (ulong)saddr - (ulong)ppcb->stkbase + PROCSTACKVADDR + 0xFF8; //+PROCSTACK
+    ppcb -> ctx[CTX_SP] = (PROCSTACKVADDR - ((ulong)temp - (ulong) saddr))+PAGE_SIZE;
+    kprintf("Stack Vaddr: %x\r\n", ppcb->ctx[CTX_SP]);
+    
+    
     ppcb->ctx[CTX_PC] = (ulong)funcaddr;
- 
+    ppcb->ctx[CTX_RA] = (ulong)INITRET;
+    //ppcb->swaparea[CTX_KERNSATP] = (ulong)MAKE_SATP(0, _kernpgtbl);
+    //ppcb->swaparea[CTX_KERNSP] = (ulong)_kernsp;
 
     //Set Process as ready
    

@@ -37,6 +37,29 @@ pgtbl createFakeTable(void){
 
 	return root;
 }
+void test_userreadnotwrite(void){
+
+        pcb *ppcb = &proctab[currpid];
+
+	kprintf("Kernel variable: %u\n\r", ppcb->state);
+       
+        ppcb->state = 404; // should not be possible for user process
+        kprintf("Updated: %u\n\r", ppcb->state);
+}
+
+int test_usernone(void) {
+	kprintf("This is a test of ...");
+	user_none();
+	kprintf("user_none() syscall\r\n");
+
+	return 0;
+}
+
+int* test_usermemorybound(int *ptr){
+	*ptr += 111111111;
+	return ptr;
+}
+
 
 void printPageTable(pgtbl pagetable, int lvl)
 {
@@ -48,10 +71,12 @@ void printPageTable(pgtbl pagetable, int lvl)
 	* table.  If it is a leaf, print the page table entry and the
 	* physical address is maps to. 
 	*/
-
+	if(lvl<0){
+		return;
+	}
 	//for loop for each possible entry in page table
 	int i;
-	for (i=0; i<512; i++){
+	for (i=0; i<511; i++){
 		ulong pte  = pagetable[i];
 		ulong physaddr = PTE2PA(pte);
 
@@ -88,24 +113,34 @@ void testcases(void)
 
 	kprintf("===TEST BEGIN===\r\n");
 
+	kprintf("0: test user_none\r\n");
+	kprintf("1: test user memory bounds\r\n");
+	kprintf("2: test user_readnotwrite _kernsp\r\n");
+	kprintf("4: print FakeTable\r\n");
+
 	// TODO: Test your operating system!
 
 	c = kgetc();
 	switch (c)
 	{
 		case '0':
-			// TODO: Write a testcase that creates a user process
-			// and prints out it's page table
-			printPageTable(createFakeTable(), 2);
-			break;
+			// test print page table function
+			uint pid = create((void *)test_usernone, INITSTK, 10, "test_paging", 0);
+                        printPageTable(proctab[pid].pagetable, 2);
+                        break;
 		case '1':
 			// TODO: Write a testcase that demonstrates a user
 			// process cannot access certain areas of memory
+			int pid1 = create((void *)test_usermemorybound, INITSTK, 100, "test_usermemorybound", 0);
+			ready(pid1, RESCHED_YES);
 			break;
 		case '2':
 			// TODO: Write a testcase that demonstrates a user
 			// process can read kernel variables but cannot write
 			// to them
+			kprintf("\nTesting kernel permissions\n\r");
+			int pid2 = create((void*)test_userreadnotwrite, INITSTK, 10, "test_userreadnotwrite", 0);
+			ready(pid2, RESCHED_YES);
 			break;
 		case '3':
 			// TODO: Extra credit! Add handling in xtrap to detect
@@ -113,6 +148,12 @@ void testcases(void)
 			// testcase that demonstrates your OS can detect a
 			// Null Pointer Exception.
 			break;
+		case '4':
+			// TODO: Write a testcase that creates a user process
+                        // and prints out it's page
+                        printPageTable(createFakeTable(), 2);
+                        break;
+
 		default:
 			break;
 	}

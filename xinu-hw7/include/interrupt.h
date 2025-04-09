@@ -43,9 +43,9 @@ void disable_irq(irqmask);
 #define E_STORE_AMO_PAGEFAULT 15
 
 
-void dispatch(ulong cause, ulong val, ulong *frame,
+ulong dispatch(ulong cause, ulong val, ulong *swaparea,
               ulong *program_counter);
-void xtrap(ulong *frame, ulong cause, ulong address, ulong *pc);
+void xtrap(ulong *swaparea, ulong cause, ulong address, ulong *pc);
 
 static inline void set_sepc(ulong x)
 {
